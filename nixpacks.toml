@@ -1,0 +1,16 @@
+[phases.setup]
+nixPkgs = ["python311", "python311Packages.pip", "python311Packages.virtualenv", "gcc", "postgresql"]
+
+[phases.install]
+cmds = [
+  "virtualenv .venv",
+  ". .venv/bin/activate && pip install -r backend/requirements.txt"
+]
+
+[phases.build]
+cmds = [
+  ". .venv/bin/activate && cd backend && python manage.py collectstatic --noinput"
+]
+
+[start]
+cmd = "bash start_railway.sh"
