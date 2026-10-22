@@ -101,7 +101,7 @@ const newBranchName = ref('')
 const addingBranch = ref(false)
 const form = reactive({ full_name: '', subject: '', level: '', center: '', branch: '' })
 
-const SUBJECT_ORDER = ['Mental arifmetika']
+const SUBJECT_ORDER = ['English', 'Matematika', 'Rus tili', 'IT Frontend', 'IT Backend']
 const KOREYS_LEVEL_ORDER = ['Koreys tili 1', 'Koreys tili 2']
 
 function sortByKnownOrder(items, order) {

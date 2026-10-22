@@ -252,7 +252,7 @@ let copiedTimer = null
 const filters = reactive({ q: '', status: '', center: '', branch: '' })
 const editForm = reactive({ subject: '', level: '', branch: '' })
 
-const SUBJECT_ORDER = ['English', 'Koreys tili', 'Rus tili', 'Arab tili', 'Matematika', 'IT', 'Kampyuter', 'Biologiya', 'Hamshiralik', 'Mental arifmetika']
+const SUBJECT_ORDER = ['English', 'Koreys tili', 'Rus tili', 'Arab tili', 'Matematika', 'IT', 'Kampyuter', 'Biologiya', 'Hamshiralik']
 const KOREYS_LEVEL_ORDER = ['Koreys tili 1', 'Koreys tili 2']
 
 function sortByKnownOrder(items, order) {

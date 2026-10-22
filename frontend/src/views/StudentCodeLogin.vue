@@ -110,7 +110,6 @@
           <span>📚 Rus tili</span>
           <span>💻 IT Frontend</span>
           <span>🐍 IT Backend</span>
-          <span>🧠 Mental arifmetika</span>
         </div>
 
       </div>

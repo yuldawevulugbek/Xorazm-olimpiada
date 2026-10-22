@@ -18,7 +18,6 @@
         <RouterLink to="/admin/students">▸ Yaratilgan o‘quvchilar</RouterLink>
         <RouterLink to="/admin/questions">▸ Testlar</RouterLink>
         <RouterLink to="/admin/results">▸ Natijalar</RouterLink>
-        <RouterLink to="/admin/mental-answers">▸ Mental javoblari</RouterLink>
       </nav>
 
       <div class="hacker-side-status">

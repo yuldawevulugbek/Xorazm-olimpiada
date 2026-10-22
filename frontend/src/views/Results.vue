@@ -3,7 +3,7 @@
     <div class="page-head">
       <div>
         <h2>Natijalar</h2>
-        <p>Test va mental arifmetika natijalari: o‘quvchi, fan, daraja, nechtadan nechta to‘g‘ri va foiz</p>
+        <p>Test natijalari: o‘quvchi, fan, daraja, nechtadan nechta to‘g‘ri va foiz</p>
       </div>
       <button class="primary-btn" @click="downloadExcel">Natijalarni Excelga yuklash</button>
     </div>

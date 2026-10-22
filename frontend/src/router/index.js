@@ -7,7 +7,6 @@ import CreateStudent from '../views/CreateStudent.vue'
 import StudentsList from '../views/StudentsList.vue'
 import ImportStudents from '../views/ImportStudents.vue'
 import Results from '../views/Results.vue'
-import MentalAnswers from '../views/MentalAnswers.vue'
 import Questions from '../views/Questions.vue'
 import HackerConsole from '../views/HackerConsole.vue'
 import StudentCodeLogin from '../views/StudentCodeLogin.vue'
@@ -31,7 +30,6 @@ const routes = [
       { path: 'students', component: StudentsList },
       { path: 'students/import', component: ImportStudents },
       { path: 'results', component: Results },
-      { path: 'mental-answers', component: MentalAnswers },
       { path: 'questions', component: Questions },
       { path: 'hacker', component: HackerConsole, meta: { mainAdminOnly: true } },
     ]
