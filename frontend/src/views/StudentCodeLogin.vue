@@ -110,6 +110,7 @@
           <span>📚 Rus tili</span>
           <span>💻 IT Frontend</span>
           <span>🐍 IT Backend</span>
+          <span>🇰🇷 Koreys tili</span>
         </div>
 
       </div>
