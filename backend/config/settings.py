@@ -18,16 +18,19 @@ def env_list(name: str, default: str = '') -> list[str]:
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-only-secret-key-change-me')
 # Railway'da DEBUG avtomatik o'chiq (xatolar sahifasida maxfiy ma'lumot chiqmasin), localda yoqiq.
-ON_RAILWAY = bool(os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('RAILWAY_ENVIRONMENT_NAME'))
+# Render ham shu rejimda ishlaydi (RENDER=true o'zgaruvchisini Render o'zi qo'yadi).
+ON_RAILWAY = bool(
+    os.getenv('RAILWAY_ENVIRONMENT') or os.getenv('RAILWAY_ENVIRONMENT_NAME') or os.getenv('RENDER')
+)
 DEBUG = env_bool('DEBUG', not ON_RAILWAY)
 if ON_RAILWAY and SECRET_KEY == 'dev-only-secret-key-change-me':
     import warnings
     warnings.warn('SECRET_KEY Railway Variables ichida o\'rnatilmagan: uzun tasodifiy qiymat yozing.')
 
-ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost,.railway.app,.up.railway.app,0.0.0.0')
-railway_public_domain = os.getenv('RAILWAY_PUBLIC_DOMAIN')
-if railway_public_domain and railway_public_domain not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(railway_public_domain)
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', '127.0.0.1,localhost,.railway.app,.up.railway.app,.onrender.com,0.0.0.0')
+for public_domain in (os.getenv('RAILWAY_PUBLIC_DOMAIN'), os.getenv('RENDER_EXTERNAL_HOSTNAME')):
+    if public_domain and public_domain not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(public_domain)
 if DEBUG and '*' not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append('*')
 

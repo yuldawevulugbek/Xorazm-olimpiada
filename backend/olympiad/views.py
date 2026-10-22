@@ -721,6 +721,13 @@ class StudentViewSet(viewsets.ModelViewSet):
                     })
                     continue
 
+                if is_mental_subject(subject_name):
+                    errors.append({
+                        'row': row_num,
+                        'error': "Mental arifmetika fani olib tashlangan: bu qator o'tkazib yuborildi.",
+                    })
+                    continue
+
                 branch_name = ensure_branch_exists(branch_name)
 
                 subject, level = resolve_subject_and_level(subject_name, level_name)
