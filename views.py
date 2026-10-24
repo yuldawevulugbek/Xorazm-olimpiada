@@ -20,6 +20,48 @@ from rest_framework.views import APIView
 from .models import Center, Branch, Subject, Level, Student, Question, Result, StudentAnswer, MentalTask
 from .tests_loader import SUBJECT_ALIASES, name_key, normalize_level_key
 
+# Code 6 xonali: begona odam code'larni ketma-ket terib, boshqa o'quvchining testini
+# boshlab yubormasligi uchun bitta IP'dan noto'g'ri code urinishlari cheklanadi.
+# Chegara katta: bitta sinf (bitta IP) o'quvchilarining tasodifiy xatolari unga yetmaydi.
+# Bitta maktab/zal Wi-Fi'sidan yuzlab o'quvchi kirganda hammasi bitta IP bo'lib ko'rinadi,
+# shuning uchun chegara xato yozilgan code'lar zalni to'sib qo'ymaydigan darajada katta.
+CODE_MISS_LIMIT = 300
+CODE_MISS_WINDOW_SECONDS = 600
+
+
+def client_ip(request):
+    forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    if forwarded:
+        # Oxirgi manzilni hosting proksisi (Railway/Render) qo'shadi, uni brauzer o'zgartira olmaydi.
+        return forwarded.split(',')[-1].strip()
+    return request.META.get('REMOTE_ADDR', '')
+
+
+def code_miss_key(request):
+    return f'code-miss:{client_ip(request)}'
+
+
+def code_misses_exceeded(request):
+    return (cache.get(code_miss_key(request)) or 0) >= CODE_MISS_LIMIT
+
+
+def register_code_miss(request):
+    key = code_miss_key(request)
+    if cache.add(key, 1, CODE_MISS_WINDOW_SECONDS):
+        return
+    try:
+        cache.incr(key)
+    except ValueError:
+        cache.set(key, 1, CODE_MISS_WINDOW_SECONDS)
+
+
+def code_miss_response():
+    return Response(
+        {'detail': 'Juda ko‘p noto‘g‘ri code kiritildi. 10 daqiqadan keyin qayta urinib ko‘ring.'},
+        status=status.HTTP_429_TOO_MANY_REQUESTS,
+    )
+
+
 def is_mental_subject(subject_name):
     normalized = subject_name.lower().replace("'", '').replace('‘', '').replace('’', '')
     return 'mental' in normalized
@@ -29,9 +71,9 @@ def get_exam_duration_minutes(student):
     if is_mental_subject(student.subject.name):
         return 5
     try:
-        return int(student.level.duration_minutes or 60)
+        return int(student.level.duration_minutes or 30)
     except Exception:
-        return 60
+        return 30
 
 
 def get_exam_duration_seconds(student):
@@ -299,9 +341,7 @@ from .serializers import (
 
 
 
-DEFAULT_SUBJECT_LEVELS_FOR_FORMS = {
-    'Koreys tili': ['Koreys tili 1', 'Koreys tili 2'],
-}
+DEFAULT_SUBJECT_LEVELS_FOR_FORMS = {}
 
 
 def resolve_subject_and_level(subject_name, level_name):
@@ -333,7 +373,7 @@ def ensure_subject_levels_for_forms():
 
     Railway runs migrations before the app starts, but older deployments/databases can
     still miss a subject until seed_demo finishes. This lightweight guard guarantees
-    that /subjects/ and /levels/ can show Koreys tili immediately.
+    that /subjects/ and /levels/ can show a newly added subject immediately.
     """
     for subject_name, level_names in DEFAULT_SUBJECT_LEVELS_FOR_FORMS.items():
         subject, _ = Subject.objects.get_or_create(name=subject_name)
@@ -759,6 +799,155 @@ class StudentViewSet(viewsets.ModelViewSet):
             'students': StudentSerializer(created, many=True).data,
         }, status=status.HTTP_201_CREATED)
 
+    @action(detail=False, methods=['post'], url_path='import-codes')
+    def import_codes(self, request):
+        """Code yaratish: Excel'dagi har bir o'quvchi aynan Excel'da yozilgan 6 xonali code bilan yaratiladi.
+
+        Ustunlar: Ism familiya, Fan, Daraja, O'quv markaz, Code (Filial ixtiyoriy).
+        Fan va daraja bazadagi testli darajaga mos kelishi kerak. Xato qatorlar o'tkazib yuboriladi.
+        """
+        if not can_manage_students(request.user):
+            return Response({'detail': 'Sizga o‘quvchi yaratishga ruxsat yo‘q.'}, status=status.HTTP_403_FORBIDDEN)
+        file_obj = request.FILES.get('file')
+        if not file_obj:
+            return Response({'detail': 'Excel fayl yuborilmadi.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            ws = load_workbook(file_obj, data_only=True).active
+        except Exception:
+            return Response({'detail': 'Excel faylni o‘qib bo‘lmadi. Fayl .xlsx formatida bo‘lishi kerak.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        def header_key(value):
+            text = name_key(value).replace("'", '').replace('-', ' ').replace('.', ' ')
+            return ' '.join(text.split())
+
+        columns = {
+            'full_name': ['ism familiya', 'ism familya', 'ism familiyasi', 'ism familyasi', 'familiya ism', 'fish', 'f i sh', 'fio', 'oquvchi', 'full name'],
+            'subject': ['fan', 'fani', 'subject'],
+            'level': ['daraja', 'darajasi', 'daraja/sinf', 'sinf', 'level'],
+            'center': ['oquv markaz', 'oquv markazi', 'markaz', 'center'],
+            'branch': ['filial', 'branch'],
+            'code': ['code', 'kod', 'status code'],
+        }
+        header = [header_key(cell.value) for cell in ws[1]]
+        index = {}
+        for field, names in columns.items():
+            for idx, name in enumerate(header):
+                if name in names:
+                    index[field] = idx
+                    break
+        required = (('full_name', 'Ism familiya'), ('subject', 'Fan'), ('level', 'Daraja'), ('center', "O'quv markaz"), ('code', 'Code'))
+        missing = [label for field, label in required if field not in index]
+        if missing:
+            return Response({'detail': f"Excel'da ustun topilmadi: {', '.join(missing)}. Birinchi qatorda ustun nomlari bo‘lishi kerak."}, status=status.HTTP_400_BAD_REQUEST)
+
+        def value(row, field):
+            idx = index.get(field)
+            if idx is None or idx >= len(row) or row[idx] is None:
+                return ''
+            item = row[idx]
+            if isinstance(item, float) and item.is_integer():
+                item = int(item)
+            return ' '.join(str(item).split())
+
+        test_levels = {}
+        for level in Level.objects.select_related('subject').filter(questions__isnull=False).distinct():
+            test_levels[(name_key(level.subject.name), normalize_level_key(level.name))] = level
+
+        user_center = get_user_center(request.user)
+        user_branch = get_user_branch(request.user)
+        taken_codes = set(Student.objects.values_list('code', flat=True))
+        seen_codes = {}
+        rows = []
+        errors = []
+
+        for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+            full_name, subject_name, level_name = value(row, 'full_name'), value(row, 'subject'), value(row, 'level')
+            center_name, branch_name, code = value(row, 'center'), value(row, 'branch'), value(row, 'code')
+            if not any([full_name, subject_name, level_name, center_name, code]):
+                continue
+            if code.isdigit() and len(code) < 6:
+                code = code.zfill(6)  # Excel boshidagi 0 ni tushirib yuboradi: 12345 -> 012345
+            problems = []
+            if not full_name:
+                problems.append('ism familiya yozilmagan')
+            if not center_name and not user_center:
+                problems.append("o'quv markaz yozilmagan")
+            if not (len(code) == 6 and code.isdigit()):
+                problems.append(f'code 6 xonali son bo‘lishi kerak («{code}»)')
+            elif code in taken_codes:
+                problems.append(f'{code} code allaqachon boshqa o‘quvchiga berilgan')
+            elif code in seen_codes:
+                problems.append(f'{code} code Excel’da {seen_codes[code]}-qatorda ham bor')
+            subject_key = name_key(SUBJECT_ALIASES.get(name_key(subject_name), subject_name))
+            level = test_levels.get((subject_key, normalize_level_key(level_name)))
+            if level is None:
+                problems.append(f'«{subject_name} / {level_name}» uchun test topilmadi')
+            if problems:
+                errors.append({'row': row_num, 'full_name': full_name, 'code': code, 'error': '; '.join(problems)})
+                continue
+            seen_codes[code] = row_num
+            rows.append((full_name, level, center_name, branch_name, code))
+
+        created = []
+        with transaction.atomic():
+            for full_name, level, center_name, branch_name, code in rows:
+                first_name, _, last_name = full_name.partition(' ')
+                if not is_main_admin(request.user) and user_center:
+                    center = user_center
+                    branch_name = branch_name or user_branch
+                else:
+                    center, _ = Center.objects.get_or_create(name=center_name)
+                created.append(Student.objects.create(
+                    first_name=first_name,
+                    last_name=last_name,
+                    subject=level.subject,
+                    level=level,
+                    center=center,
+                    branch=ensure_branch_exists(normalize_branch(branch_name)) or 'Boshqa',
+                    code=code,
+                    status=Student.Status.NOT_STARTED,
+                ))
+
+        return Response({
+            'created_count': len(created),
+            'errors': errors,
+            'students': StudentSerializer(created, many=True).data,
+        }, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'], url_path='code-template')
+    def code_template(self, request):
+        """Code yaratish uchun Excel namunasi: ustunlar va testli fan/darajalar ro'yxati."""
+        wb = Workbook()
+        ws = wb.active
+        ws.title = 'Oquvchilar'
+        ws.append(['№', 'Ism familiya', 'Fan', 'Daraja', "O'quv markaz", 'Code'])
+        ws.append([1, 'Ali Valiyev', 'Matematika', '5-sinf', 'Al-Aziz Academy', '123456'])
+        ws.append([2, 'Madina Karimova', 'IT', 'Python', 'Al-Aziz Academy', '654321'])
+        for cell in ws[1]:
+            cell.font = Font(bold=True, color='FFFFFF')
+            cell.fill = PatternFill('solid', fgColor='1F4E79')
+        for row in ws.iter_rows(min_row=2, max_row=500, min_col=6, max_col=6):
+            for cell in row:
+                cell.number_format = '@'  # code matn bo'lib qolsin, boshidagi 0 yo'qolmasin
+        for column, width in zip('ABCDEF', (5, 28, 16, 24, 24, 12)):
+            ws.column_dimensions[column].width = width
+
+        info = wb.create_sheet('Fan va darajalar')
+        info.append(['Fan', 'Daraja'])
+        for cell in info[1]:
+            cell.font = Font(bold=True)
+        levels = Level.objects.select_related('subject').filter(questions__isnull=False).distinct()
+        for level in sorted(levels, key=lambda item: (item.subject.name, level_sort_key(item))):
+            info.append([level.subject.name, level.name])
+        info.column_dimensions['A'].width = 18
+        info.column_dimensions['B'].width = 26
+
+        output = BytesIO()
+        wb.save(output)
+        response = HttpResponse(output.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="code_yaratish_namuna.xlsx"'
+        return response
+
     @action(detail=False, methods=['get'], url_path='export-excel')
     def export_excel(self, request):
         students = self.get_queryset().select_related('subject', 'level', 'center', 'result')
@@ -1038,15 +1227,19 @@ class ResultViewSet(viewsets.ReadOnlyModelViewSet):
 
 class PublicResultLookupAPIView(APIView):
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         code = str(request.data.get('code', '')).strip()
+        if code_misses_exceeded(request):
+            return code_miss_response()
         if not code:
             return Response({'detail': 'Status code kiriting.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             student = Student.objects.select_related('subject', 'level', 'center').get(code=code)
         except Student.DoesNotExist:
+            register_code_miss(request)
             return Response({'detail': 'Bunday code topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
 
         if student.status != Student.Status.COMPLETED:
@@ -1081,8 +1274,7 @@ class PublicResultLookupAPIView(APIView):
             'center_name': student.center.name,
             'branch': student.branch,
             'total_questions': result.total_questions,
-            'correct_count': result.correct_count,
-            'percent': result.percent,
+            # Ball va foiz o'quvchiga ko'rsatilmaydi: ular faqat admin panelda.
             'spent_seconds': result.spent_seconds,
             'finished_at': result.finished_at,
             'is_mental': is_mental,
@@ -1095,12 +1287,15 @@ class PublicResultLookupAPIView(APIView):
 LEVEL_DISPLAY_ORDER = [
     'starter', 'beginner', 'elementary', 'pre-intermediate', 'intermediate',
     'upper-intermediate', 'advanced', 'a1', 'a2', 'b1', 'b2', 'c1',
-    'html css', 'javascript', 'vue', 'python',
+    'html css', 'javascript', 'react', 'vue', 'python',
+    'excel', 'word excel powerpoint',
 ]
 
 
 def level_sort_key(level):
     key = normalize_level_key(level.name)
+    if key == 'kids':
+        return (0, 0, '')
     number = key.split('-')[0]
     if key.endswith('-sinf') and number.isdigit():
         return (0, int(number), '')
@@ -1233,10 +1428,13 @@ class ExamRegisterAPIView(APIView):
 
 class ExamStartAPIView(APIView):
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     @transaction.atomic
     def post(self, request):
         code = str(request.data.get('code', '')).strip()
+        if code_misses_exceeded(request):
+            return code_miss_response()
         requested_version = normalize_requested_version(request.data.get('version'))
         if not code:
             return Response({'detail': 'Status code kiriting.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -1244,6 +1442,7 @@ class ExamStartAPIView(APIView):
         try:
             student = Student.objects.select_related('subject', 'level', 'center').select_for_update().get(code=code)
         except Student.DoesNotExist:
+            register_code_miss(request)
             return Response({'detail': 'Bunday code topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
 
         if student.status == Student.Status.COMPLETED or student.is_used:
@@ -1380,53 +1579,64 @@ class ExamStartAPIView(APIView):
 
 class ExamProgressSaveAPIView(APIView):
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
-    @transaction.atomic
     def post(self, request):
+        # Eng ko'p chaqiriladigan so'rov: yuzlab o'quvchi har 15 soniyada va har javobda yuboradi.
+        # Shuning uchun qatorni qulflab o'qimasdan, bitta UPDATE bilan saqlanadi.
         code = str(request.data.get('code', '')).strip()
+        if code_misses_exceeded(request):
+            return code_miss_response()
         if not code:
             return Response({'detail': 'Status code yuborilmadi.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        raw_answers = request.data.get('answers', {})
         try:
-            student = Student.objects.select_related('subject', 'level', 'center').select_for_update().get(code=code)
-        except Student.DoesNotExist:
-            return Response({'detail': 'Bunday code topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
-
-        if student.status == Student.Status.COMPLETED or student.is_used:
-            return Response({'detail': 'Bu test allaqachon yakunlangan.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if student.status != Student.Status.IN_PROGRESS:
-            return Response({'detail': 'Avval testni boshlash kerak.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        is_mental_exam = is_mental_subject(student.subject.name)
-        duration_seconds = get_exam_duration_seconds(student)
-        answers = normalize_progress_answers(request.data.get('answers', {}), is_mental=is_mental_exam)
-
-        try:
-            remaining_seconds = int(request.data.get('remaining_seconds', duration_seconds))
+            remaining_seconds = max(0, int(request.data.get('remaining_seconds')))
         except (TypeError, ValueError):
-            remaining_seconds = get_resume_remaining_seconds(student)
-        remaining_seconds = max(0, min(duration_seconds, remaining_seconds))
-
+            remaining_seconds = None
         try:
-            current_index = int(request.data.get('current_index', 0))
+            current_index = max(0, int(request.data.get('current_index', 0)))
         except (TypeError, ValueError):
             current_index = 0
-        current_index = max(0, current_index)
 
-        student.progress_answers = answers
-        student.progress_remaining_seconds = remaining_seconds
-        student.progress_current_index = current_index
-        student.progress_updated_at = timezone.now()
-        student.save(update_fields=[
-            'progress_answers', 'progress_remaining_seconds', 'progress_current_index', 'progress_updated_at'
-        ])
+        info = (
+            Student.objects.filter(code=code)
+            .values('status', 'is_used', 'subject__name', 'level__duration_minutes', 'progress_remaining_seconds')
+            .first()
+        )
+        if info is None:
+            register_code_miss(request)
+            return Response({'detail': 'Bunday code topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
+        if info['status'] == Student.Status.COMPLETED or info['is_used']:
+            return Response({'detail': 'Bu test allaqachon yakunlangan.'}, status=status.HTTP_400_BAD_REQUEST)
+        if info['status'] != Student.Status.IN_PROGRESS:
+            return Response({'detail': 'Avval testni boshlash kerak.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        is_mental_exam = is_mental_subject(info['subject__name'])
+        if is_mental_exam:
+            duration_seconds = 5 * 60
+        else:
+            duration_seconds = max(1, int(info['level__duration_minutes'] or 30) * 60)
+        if remaining_seconds is None:
+            remaining_seconds = info['progress_remaining_seconds'] if info['progress_remaining_seconds'] is not None else duration_seconds
+        remaining_seconds = min(duration_seconds, remaining_seconds)
+        answers = normalize_progress_answers(raw_answers, is_mental=is_mental_exam)
+
+        # Shart status ichida: shu orada test yakunlangan bo'lsa, eski progress ustidan yozilmaydi.
+        updated = Student.objects.filter(code=code, status=Student.Status.IN_PROGRESS, is_used=False).update(
+            progress_answers=answers,
+            progress_remaining_seconds=remaining_seconds,
+            progress_current_index=current_index,
+            progress_updated_at=timezone.now(),
+        )
+        if not updated:
+            return Response({'detail': 'Bu test allaqachon yakunlangan.'}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({
             'status': 'ok',
-            'remaining_seconds': student.progress_remaining_seconds,
-            'saved_answers': student.progress_answers,
-            'progress_current_index': student.progress_current_index,
+            'remaining_seconds': remaining_seconds,
+            'progress_current_index': current_index,
         })
 
 
@@ -1443,6 +1653,7 @@ def build_submit_response(result):
 
 class ExamSubmitAPIView(APIView):
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     def submit_mental(self, student, answers, remaining_seconds=None):
         task_ids = [item.get('task_id') for item in answers if isinstance(item, dict)]
@@ -1508,6 +1719,8 @@ class ExamSubmitAPIView(APIView):
     @transaction.atomic
     def post(self, request):
         code = str(request.data.get('code', '')).strip()
+        if code_misses_exceeded(request):
+            return code_miss_response()
         answers = request.data.get('answers', [])
 
         if not code:
@@ -1516,6 +1729,7 @@ class ExamSubmitAPIView(APIView):
         try:
             student = Student.objects.select_related('subject', 'level', 'center').select_for_update().get(code=code)
         except Student.DoesNotExist:
+            register_code_miss(request)
             return Response({'detail': 'Bunday code topilmadi.'}, status=status.HTTP_404_NOT_FOUND)
 
         if student.status == Student.Status.COMPLETED or student.is_used:
@@ -1544,40 +1758,42 @@ class ExamSubmitAPIView(APIView):
                 answer_map[qid] = selected
 
         exam_version = student.selected_version or 1
-        questions = list(Question.objects.filter(subject=student.subject, level=student.level, version=exam_version).order_by('id'))
+        # Javob kaliti ham qisqa muddatli keshdan: hamma birga yakunlaganda bazaga kamroq so'rov ketadi.
+        key = f'exam-answer-key:{student.subject_id}:{student.level_id}:{exam_version}'
+        answer_key = cache.get(key)
+        if answer_key is None:
+            answer_key = list(
+                Question.objects.filter(subject=student.subject, level=student.level, version=exam_version)
+                .order_by('id').values_list('id', 'correct_answer')
+            )
+            cache.set(key, answer_key, 60)
+
+        graded = []
         correct_count = 0
+        for question_id, correct_answer in answer_key:
+            selected = answer_map.get(question_id, '')
+            is_correct = selected == correct_answer
+            correct_count += is_correct
+            graded.append((question_id, selected, is_correct))
+
         finished_at = timezone.now()
         started_at = student.started_at or finished_at
         spent_seconds = calculate_spent_seconds(student, finished_at, submitted_remaining_seconds)
+        final_score, percent = apply_visible_score_penalty(correct_count, len(answer_key))
 
         result = Result.objects.create(
             student=student,
-            total_questions=len(questions),
-            correct_count=0,
-            percent=0,
+            total_questions=len(answer_key),
+            correct_count=final_score,
+            percent=percent,
             started_at=started_at,
             finished_at=finished_at,
             spent_seconds=spent_seconds,
         )
-
-        answer_objects = []
-        for question in questions:
-            selected = answer_map.get(question.id, '')
-            is_correct = selected == question.correct_answer
-            if is_correct:
-                correct_count += 1
-            answer_objects.append(StudentAnswer(
-                result=result,
-                question=question,
-                selected_answer=selected,
-                is_correct=is_correct,
-            ))
-        StudentAnswer.objects.bulk_create(answer_objects)
-
-        final_score, percent = apply_visible_score_penalty(correct_count, len(questions))
-        result.correct_count = final_score
-        result.percent = percent
-        result.save(update_fields=['correct_count', 'percent'])
+        StudentAnswer.objects.bulk_create([
+            StudentAnswer(result=result, question_id=question_id, selected_answer=selected, is_correct=is_correct)
+            for question_id, selected, is_correct in graded
+        ])
 
         student.status = Student.Status.COMPLETED
         student.finished_at = finished_at

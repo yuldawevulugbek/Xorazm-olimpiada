@@ -12,5 +12,6 @@ def clear_exam_questions_cache(sender, instance, **kwargs):
     from .views import exam_questions_cache_key
 
     cache.delete(exam_questions_cache_key(instance.subject_id, instance.level_id, instance.version or 1))
+    cache.delete(f'exam-answer-key:{instance.subject_id}:{instance.level_id}:{instance.version or 1}')
     # Ro'yxatdan o'tish oynasidagi fan/daraja ro'yxati ham yangilansin.
     cache.delete('registration-catalog')

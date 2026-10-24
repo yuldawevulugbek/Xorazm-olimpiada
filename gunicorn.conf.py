@@ -15,8 +15,8 @@ graceful_timeout = 30
 keepalive = 5
 
 # Xotira asta-sekin o'sib ketmasligi uchun jarayonlar vaqti-vaqti bilan yangilanadi (hammasi birdan emas).
-max_requests = 2000
-max_requests_jitter = 300
+max_requests = 10000
+max_requests_jitter = 2000
 
 backlog = 2048
 accesslog = None

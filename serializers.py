@@ -61,6 +61,7 @@ class StudentSerializer(serializers.ModelSerializer):
     total_questions = serializers.SerializerMethodField()
     percent = serializers.SerializerMethodField()
     spent_seconds = serializers.SerializerMethodField()
+    code = serializers.CharField(max_length=6, required=False, allow_blank=True)
 
     class Meta:
         model = Student
@@ -71,7 +72,7 @@ class StudentSerializer(serializers.ModelSerializer):
             'progress_updated_at', 'created_at', 'correct_count', 'total_questions', 'percent', 'spent_seconds'
         ]
         read_only_fields = [
-            'is_self_registered', 'code', 'status', 'started_at', 'finished_at', 'is_used', 'selected_version', 'progress_remaining_seconds',
+            'is_self_registered', 'status', 'started_at', 'finished_at', 'is_used', 'selected_version', 'progress_remaining_seconds',
             'progress_current_index', 'progress_updated_at', 'created_at'
         ]
 
@@ -89,6 +90,18 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def get_spent_seconds(self, obj):
         return getattr(getattr(obj, 'result', None), 'spent_seconds', None)
+
+    def validate_code(self, value):
+        # Code ixtiyoriy: bo'sh qolsa model o'zi random 6 xonali code beradi.
+        value = str(value or '').strip()
+        if value and not (len(value) == 6 and value.isdigit()):
+            raise serializers.ValidationError('Code 6 xonali son bo‘lishi kerak.')
+        taken = Student.objects.filter(code=value)
+        if self.instance is not None:
+            taken = taken.exclude(pk=self.instance.pk)
+        if value and taken.exists():
+            raise serializers.ValidationError(f'{value} code allaqachon boshqa o‘quvchiga berilgan.')
+        return value
 
     def validate(self, attrs):
         subject = attrs.get('subject') or getattr(self.instance, 'subject', None)

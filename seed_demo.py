@@ -37,4 +37,4 @@ class Command(BaseCommand):
         moved = move_students_to_test_levels()
 
         self.stdout.write(self.style.SUCCESS('Admin login tayyor: ulugbek (parol ADMIN_PASSWORD yoki standart)'))
-        self.stdout.write(self.style.SUCCESS(f'Matematika (1–11-sinf), English, Rus tili, Koreys tili, Arab tili, IT Frontend va IT Backend testlari tayyor. Yangi qo‘shilgan savollar: {added}. Testli darajaga o‘tkazilgan o‘quvchilar: {moved}. Birlashtirilgan takroriy fanlar: {merged}.'))
+        self.stdout.write(self.style.SUCCESS(f'Matematika (Kids, 1–11-sinf), IT (HTML CSS, JavaScript, React, Vue, Python), Kompyuter (Excel, Word Excel PowerPoint) va English (Kids, Beginner, Elementary, Intermediate, Advanced) testlari tayyor. Yangi qo‘shilgan savollar: {added}. Testli darajaga o‘tkazilgan o‘quvchilar: {moved}. Birlashtirilgan takroriy fanlar: {merged}.'))
