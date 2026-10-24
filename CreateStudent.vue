@@ -5,10 +5,7 @@
         <h2>O‘quvchi yaratish</h2>
         <p>O‘quvchiga fan, daraja/sinf, o‘quv markaz va filial biriktiriladi. Kichik admin faqat o‘z markaziga o‘quvchi qo‘sha oladi.</p>
       </div>
-      <div v-if="canCreateStudents" class="page-head-actions">
-        <RouterLink class="secondary-btn" to="/admin/students/codes">Code yaratish (Excel)</RouterLink>
-        <RouterLink class="primary-btn" to="/admin/students/import">Excel orqali yuklash</RouterLink>
-      </div>
+      <RouterLink v-if="canCreateStudents" class="primary-btn" to="/admin/students/import">Excel orqali yuklash</RouterLink>
     </div>
 
     <div v-if="!canCreateStudents" class="error-box">
@@ -68,20 +65,6 @@
             </button>
           </div>
 
-          <label>Code (6 xonali)
-            <div class="code-input-row">
-              <input
-                v-model="form.code"
-                inputmode="numeric"
-                maxlength="6"
-                pattern="[0-9]{6}"
-                placeholder="Bo‘sh qolsa avtomatik beriladi"
-                @input="form.code = form.code.replace(/\D/g, '').slice(0, 6)"
-              />
-              <button type="button" class="secondary-btn" @click="randomCode">Random</button>
-            </div>
-          </label>
-
           <button class="primary-btn">Yaratish</button>
         </form>
         <p v-if="error" class="error-box">{{ error }}</p>
@@ -116,9 +99,9 @@ const { branches, loadBranches, addBranch } = useBranches()
 const { centers, loadCenters } = useCenters()
 const newBranchName = ref('')
 const addingBranch = ref(false)
-const form = reactive({ full_name: '', subject: '', level: '', center: '', branch: '', code: '' })
+const form = reactive({ full_name: '', subject: '', level: '', center: '', branch: '' })
 
-const SUBJECT_ORDER = ['Matematika', 'IT', 'Kompyuter', 'English']
+const SUBJECT_ORDER = ['English', 'Matematika', 'Rus tili', 'IT Frontend', 'IT Backend']
 const KOREYS_LEVEL_ORDER = ['Koreys tili 1', 'Koreys tili 2']
 
 function sortByKnownOrder(items, order) {
@@ -139,11 +122,11 @@ const filteredLevels = computed(() => {
   const list = levels.value.filter(l => String(l.subject) === String(form.subject))
   const selectedSubject = subjects.value.find(s => String(s.id) === String(form.subject))
   if (selectedSubject?.name === 'IT') {
-    const order = ['HTML CSS', 'JavaScript', 'React', 'Vue', 'Python']
+    const order = ['Frontend 1', 'Frontend 2', 'Backend 1', 'Backend 2']
     return [...list].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name))
   }
   if (selectedSubject?.name === 'English') {
-    const order = ['Kids', 'Beginner', 'Elementary', 'Intermediate', 'Advanced']
+    const order = ['Starter 1', 'Beginner 1', 'Beginner 2', 'Beginner 3', 'Elementary 1', 'Elementary 2', 'Elementary 3', 'Pre-Intermediate 1', 'Pre-Intermediate 2', 'Pre-Intermediate 3', 'Intermediate 1', 'Intermediate 2', 'Intermediate 3', 'Upper-Intermediate 1', 'Advanced 1', 'IELTS']
     return [...list].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name))
   }
   if (selectedSubject?.name === 'Koreys tili') {
@@ -223,10 +206,6 @@ async function createStudent() {
       center: centerId,
       branch: form.branch,
     }
-    if (form.code) {
-      if (!/^\d{6}$/.test(form.code)) throw new Error('Code 6 xonali son bo‘lishi kerak.')
-      payload.code = form.code
-    }
     const res = await api.post('/students/', payload)
     createdStudent.value = res.data
     Object.assign(form, {
@@ -235,17 +214,10 @@ async function createStudent() {
       level: '',
       center: mainAdmin.value ? '' : currentAdmin.value?.assigned_center,
       branch: !mainAdmin.value && currentAdmin.value?.branch ? currentAdmin.value.branch : '',
-      code: '',
     })
   } catch (e) {
-    const data = e.response?.data
-    if (data?.code) error.value = `Code: ${[].concat(data.code).join(' ')}`
-    else error.value = data ? JSON.stringify(data) : (e.message || 'Xatolik')
+    error.value = e.message || JSON.stringify(e.response?.data || 'Xatolik')
   }
-}
-
-function randomCode() {
-  form.code = String(Math.floor(100000 + Math.random() * 900000))
 }
 
 async function copyCode(code) {
