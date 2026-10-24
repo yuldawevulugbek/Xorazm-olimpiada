@@ -78,7 +78,7 @@
         <span>{{ currentStage === 1 ? 'Avval 1–20 savollarni ishlang.' : `2-bosqich: 21–${allQuestions.length} savollarni ishlang.` }}</span>
       </div>
 
-      <div v-for="item in visibleQuestions" :key="item.q.id" class="question-card">
+      <div v-for="item in visibleQuestions" :key="item.q.id" class="question-card" :data-qid="item.q.id">
         <h3 class="question-text">{{ item.number }}. {{ item.q.text }}</h3>
         <img v-if="item.q.image_url" :src="item.q.image_url" alt="" class="question-image" loading="lazy" />
         <div class="options-grid">
@@ -87,8 +87,9 @@
             :key="opt.value"
             class="option-card"
             :class="{ selected: answers[item.q.id] === opt.value }"
+            @click.prevent="selectAnswer(item.q.id, opt.value)"
           >
-            <input type="radio" :name="`question-${item.q.id}`" :value="opt.value" v-model="answers[item.q.id]" @change="persistTestProgress" />
+            <input type="radio" tabindex="-1" :name="`question-${item.q.id}`" :value="opt.value" :checked="answers[item.q.id] === opt.value" />
             <span>{{ opt.value }}) {{ opt.text }}</span>
           </label>
         </div>
@@ -102,9 +103,9 @@
     <div v-if="stageBreakModal" class="modal-backdrop success-backdrop">
       <div class="finish-modal-card success">
         <div class="finish-icon">2</div>
-        <h2>2-bosqich</h2>
-        <p>Endi qolgan {{ allQuestions.length - 20 }} ta test chiqadi. Umumiy vaqt {{ payload?.duration_minutes || 60 }} daqiqa bo‘yicha davom etadi.</p>
-        <button class="primary-btn" type="button" @click="startSecondStage">Boshlash</button>
+        <h2>Stage 2</h2>
+        <p>The remaining {{ allQuestions.length - 20 }} questions are next. The total time of {{ payload?.duration_minutes || 30 }} minutes keeps running.</p>
+        <button class="primary-btn" type="button" @click="startSecondStage">Start</button>
       </div>
     </div>
 
@@ -112,12 +113,12 @@
     <div v-if="confirmFinishOpen && !finishModal.show" class="modal-backdrop success-backdrop" @click.self="confirmFinishOpen = false">
       <div class="finish-modal-card confirm">
         <div class="finish-icon">?</div>
-        <h2>Testni yakunlaysizmi?</h2>
-        <p v-if="unansweredCount">Javob berilmagan savollar: <b>{{ unansweredCount }} ta</b>. Yakunlagandan keyin javoblarni o‘zgartirib bo‘lmaydi.</p>
-        <p v-else>Barcha savollarga javob berdingiz. Yakunlagandan keyin javoblarni o‘zgartirib bo‘lmaydi.</p>
+        <h2>Finish the test?</h2>
+        <p v-if="unansweredCount">Unanswered questions: <b>{{ unansweredCount }}</b>. You cannot change your answers after finishing.</p>
+        <p v-else>You have answered all questions. You cannot change your answers after finishing.</p>
         <div class="confirm-actions">
-          <button class="secondary-btn" type="button" @click="confirmFinishOpen = false">Qaytish</button>
-          <button class="primary-btn" type="button" @click="confirmFinishOpen = false; submitExam()">Ha, yakunlash</button>
+          <button class="secondary-btn" type="button" @click="confirmFinishOpen = false">Go back</button>
+          <button class="primary-btn" type="button" @click="confirmFinishOpen = false; submitExam()">Yes, finish</button>
         </div>
       </div>
     </div>
@@ -127,7 +128,7 @@
         <div class="finish-icon">{{ finishModal.type === 'success' ? '✓' : '!' }}</div>
         <h2>{{ finishModal.title }}</h2>
         <p>{{ finishModal.message }}</p>
-        <button class="primary-btn" type="button" @click="finishModal.type === 'success' ? goToStudentLogin() : closeFinishModal()">{{ finishModal.type === 'success' ? 'Code kiritish sahifasiga qaytish' : 'Yopish' }}</button>
+        <button class="primary-btn" type="button" @click="finishModal.type === 'success' ? goToStudentLogin() : closeFinishModal()">{{ finishModal.type === 'success' ? 'Back to the code page' : 'Close' }}</button>
       </div>
     </div>
   </div>
@@ -185,7 +186,7 @@ const isMental = computed(() => payload.value?.mode === 'mental')
 const mentalTasks = computed(() => payload.value?.mental_tasks || [])
 const availableVersions = computed(() => payload.value?.available_versions || [])
 const allQuestions = computed(() => payload.value?.questions || [])
-// Barcha testlar 1 bosqichli: savollar soni qancha bo'lishidan qat'i nazar hammasi bitta sahifada.
+// Every question is shown on one page; the old 20-question two-stage split is turned off.
 const visibleQuestions = computed(() => allQuestions.value.map((q, index) => ({ q, number: index + 1 })))
 const hasSecondStage = computed(() => false)
 const isFirstStageComplete = computed(() => allQuestions.value.slice(0, 20).every(q => answers[q.id]))
@@ -198,8 +199,8 @@ const formattedTime = computed(() => {
 function showFinishSuccess() {
   finishModal.show = true
   finishModal.type = 'success'
-  finishModal.title = 'Test yakunlandi'
-  finishModal.message = 'Javoblaringiz adminga yuborildi.'
+  finishModal.title = 'Test completed'
+  finishModal.message = 'Your answers have been sent to the administrator.'
   // O‘quvchiga nechta to‘g‘ri topgani va foiz ko‘rsatilmaydi.
   // Natijalar faqat admin panelda ko‘rinadi.
   finishModal.result = null
@@ -208,8 +209,8 @@ function showFinishSuccess() {
 function showFinishError(message) {
   finishModal.show = true
   finishModal.type = 'error'
-  finishModal.title = 'Xatolik yuz berdi'
-  finishModal.message = message || 'Javoblarni yuborishda xatolik yuz berdi.'
+  finishModal.title = 'Something went wrong'
+  finishModal.message = message || 'Your answers could not be sent. Please try again.'
   finishModal.result = null
 }
 
@@ -219,6 +220,21 @@ function goToStudentLogin() {
 
 function closeFinishModal() {
   finishModal.show = false
+}
+
+// Variant bitta bosishda belgilanadi: javob to'g'ridan-to'g'ri yoziladi, yashirin radio
+// tugmaga fokus berilmaydi (telefonda sahifa sakrab, ikkinchi marta bosish kerak bo'lmasin).
+function selectAnswer(questionId, value) {
+  if (submitted || submitting.value) return
+  answers[questionId] = value
+  persistTestProgress()
+}
+
+// Code qayta kiritilganda o'quvchi to'xtagan joyiga, birinchi javobsiz savolga olib boriladi.
+function scrollToFirstUnanswered() {
+  const first = allQuestions.value.find(q => !answers[q.id])
+  if (!first || first === allQuestions.value[0]) return
+  document.querySelector(`[data-qid="${first.id}"]`)?.scrollIntoView({ block: 'center' })
 }
 
 function optionList(q) {
@@ -338,6 +354,19 @@ function remainingFromStartedAt(defaultMinutes) {
 
   const elapsedSeconds = Math.max(0, Math.floor((Date.now() - startedAt) / 1000))
   return Math.max(0, durationSeconds - elapsedSeconds)
+}
+
+// Sahifa yangilansa sessionStorage'dagi eski payload boshlang'ich vaqtni beradi.
+// Brauzerda saqlangan qolgan vaqt kamroq bo'lsa, o'shani olamiz: yangilash vaqt qo'shib bermaydi.
+function applyLocalRemaining(key) {
+  if (!key) return
+  try {
+    const saved = JSON.parse(localStorage.getItem(key) || '{}')
+    const local = Number(saved.remaining_seconds)
+    if (Number.isFinite(local) && local >= 0 && local < remainingSeconds.value) {
+      remainingSeconds.value = Math.floor(local)
+    }
+  } catch (_) {}
 }
 
 function clearMentalTimers() {
@@ -508,7 +537,7 @@ async function submitExam() {
     showFinishSuccess()
   } catch (e) {
     submitted = false
-    showFinishError(e.response?.data?.detail || 'Testni yakunlashda xatolik.')
+    showFinishError(e.response?.data?.detail || 'Could not finish the test. Please try again.')
   } finally {
     submitting.value = false
   }
@@ -558,7 +587,7 @@ function bootExamPayload() {
     // Backend bergan started_at bo‘yicha qolgan vaqt hisoblanadi.
     const durationMinutes = safeDurationMinutes(payload.value.duration_minutes || 5)
     remainingSeconds.value = remainingFromStartedAt(durationMinutes)
-
+    applyLocalRemaining(mentalProgressKey())
     loadMentalProgress()
     if (remainingSeconds.value <= 0 || currentMentalIndex.value >= mentalTasks.value.length) {
       submitMentalExam()
@@ -569,9 +598,10 @@ function bootExamPayload() {
     return
   }
 
-  // Oddiy English testda 60 minut vaqt beriladi. Code qayta kiritilganda avvalgi javoblar va qolgan vaqt saqlanadi.
-  const durationMinutes = safeDurationMinutes(payload.value.duration_minutes || 60)
+  // Oddiy testda 30 minut vaqt beriladi. Code qayta kiritilganda avvalgi javoblar va qolgan vaqt saqlanadi.
+  const durationMinutes = safeDurationMinutes(payload.value.duration_minutes || 30)
   remainingSeconds.value = remainingFromStartedAt(durationMinutes)
+  applyLocalRemaining(examProgressKey())
   loadTestProgress()
   if (!hasSecondStage.value) currentStage.value = 1
   else if (currentStage.value !== 2 && isFirstStageComplete.value) currentStage.value = 2
@@ -640,15 +670,25 @@ onMounted(() => {
   window.addEventListener('beforeunload', saveProgressBeforeExit)
   window.addEventListener('pagehide', saveProgressBeforeExit)
   document.addEventListener('visibilitychange', handleVisibilityChange)
-  const saved = sessionStorage.getItem('exam_payload')
-  if (!saved) return
-  payload.value = JSON.parse(saved)
+  let saved = null
+  try {
+    saved = JSON.parse(sessionStorage.getItem('exam_payload') || 'null')
+  } catch (_) {}
+  // Test sahifasi yangi oynada yoki payloadsiz ochilsa, bo'sh ekran o'rniga code kiritish sahifasiga qaytaramiz.
+  if (!saved) {
+    router.replace('/student')
+    return
+  }
+  payload.value = saved
   bootExamPayload()
-  // Test har doim tepadan, 1-savoldan ko'rinadi (savollar chizilgandan keyin ham).
-  const scrollToTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  scrollToTop()
-  nextTick(() => requestAnimationFrame(scrollToTop))
-  setTimeout(scrollToTop, 350)
+  // Yangi test tepadan, 1-savoldan ko'rinadi; davom ettirilgan test esa birinchi javobsiz savoldan.
+  const placeScroll = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    if (!isMental.value && !isVersionSelect.value) scrollToFirstUnanswered()
+  }
+  placeScroll()
+  nextTick(() => requestAnimationFrame(placeScroll))
+  setTimeout(placeScroll, 350)
 })
 
 onBeforeUnmount(() => {

@@ -1,0 +1,40 @@
+# Render Blueprint: backend (Django) + PostgreSQL.
+# Render -> New -> Blueprint -> shu repozitoriyni tanlang. Frontend Netlify'da alohida turadi.
+services:
+  - type: web
+    name: antalya-olimpiada-backend
+    runtime: python
+    rootDir: backend
+    # 0.5c-512mb ($7/oy): uxlamaydi, 512 MB RAM. Dashboard'da tarifni o'zgartirsangiz, shu yerni ham moslang,
+    # aks holda Blueprint sinxronlashda tarif qaytib qolishi mumkin.
+    plan: 0.5c-512mb
+    buildCommand: pip install -r requirements.txt
+    # migrate -> seed_demo (bo'sh darajalarga testlarni yuklaydi, borlarini o'chirmaydi) -> gunicorn
+    startCommand: bash start_railway.sh
+    healthCheckPath: /api/health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DATABASE_URL
+        fromDatabase:
+          name: antalya-olimpiada-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: CORS_ALLOW_NETLIFY
+        value: "True"
+      - key: WEB_CONCURRENCY
+        value: "2"
+      - key: GUNICORN_THREADS
+        value: "8"
+
+databases:
+  - name: antalya-olimpiada-db
+    # 0.1c-256mb ($6/oy): bepul baza 30 kundan keyin o‘chiriladi, pulligi o‘chmaydi.
+    plan: 0.1c-256mb
+    databaseName: antalya
+    user: antalya

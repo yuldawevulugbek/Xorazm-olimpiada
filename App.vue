@@ -1,6 +1,6 @@
 <template>
   <div class="xz">
-    <XorazmBackdrop v-if="backdrop" :variant="backdrop" />
+    <AntalyaBackdrop v-if="backdrop" :variant="backdrop" />
     <router-view />
   </div>
 </template>
@@ -8,7 +8,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import XorazmBackdrop from './components/XorazmBackdrop.vue'
+import AntalyaBackdrop from './components/AntalyaBackdrop.vue'
 
 const route = useRoute()
 

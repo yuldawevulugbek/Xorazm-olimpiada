@@ -252,7 +252,7 @@ let copiedTimer = null
 const filters = reactive({ q: '', status: '', center: '', branch: '' })
 const editForm = reactive({ subject: '', level: '', branch: '' })
 
-const SUBJECT_ORDER = ['English', 'Koreys tili', 'Rus tili', 'Arab tili', 'Matematika', 'IT', 'Kampyuter', 'Biologiya', 'Hamshiralik']
+const SUBJECT_ORDER = ['Matematika', 'IT', 'Kompyuter', 'English']
 const KOREYS_LEVEL_ORDER = ['Koreys tili 1', 'Koreys tili 2']
 
 function sortByKnownOrder(items, order) {
@@ -280,12 +280,12 @@ const editFilteredLevels = computed(() => {
   const selectedSubject = subjects.value.find(subject => String(subject.id) === String(editForm.subject))
 
   if (selectedSubject?.name === 'IT') {
-    const order = ['Frontend 1', 'Frontend 2', 'Backend 1', 'Backend 2']
+    const order = ['HTML CSS', 'JavaScript', 'React', 'Vue', 'Python']
     return [...list].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name))
   }
 
   if (selectedSubject?.name === 'English') {
-    const order = ['Starter 1', 'Beginner 1', 'Beginner 2', 'Beginner 3', 'Elementary 1', 'Elementary 2', 'Elementary 3', 'Pre-Intermediate 1', 'Pre-Intermediate 2', 'Pre-Intermediate 3', 'Intermediate 1', 'Intermediate 2', 'Intermediate 3', 'Upper-Intermediate 1', 'Advanced 1', 'IELTS']
+    const order = ['Kids', 'Beginner', 'Elementary', 'Intermediate', 'Advanced']
     return [...list].sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name))
   }
 

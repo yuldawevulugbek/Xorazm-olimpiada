@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Xorazm Olimpiadasi mavzusi
-   Xiva majolikasi ranglari: lojuvard, firuza, oltin, qum.
+   Antalya Olimpiadasi mavzusi
+   O'rta dengiz ranglari: dengiz ko'ki, firuza, quyosh oltini, qum, terrakota.
    styles.css dan keyin yuklanadi va uning ustidan yozadi.
    ========================================================================== */
 
@@ -52,7 +52,7 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
-   Global fon: osmon, majolika, Xiva silueti, 3D kublar
+   Global fon: osmon, naqsh, Antalya silueti, 3D kublar
    -------------------------------------------------------------------------- */
 .xorazm-backdrop {
   position: fixed;
@@ -67,7 +67,7 @@ body::before {
   inset: 0;
   background:
     radial-gradient(1200px 600px at 80% -10%, rgba(20, 184, 196, 0.35), transparent 60%),
-    radial-gradient(900px 500px at -10% 30%, rgba(91, 63, 209, 0.28), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgba(232, 106, 74, 0.22), transparent 60%),
     radial-gradient(800px 420px at 50% 115%, rgba(245, 200, 76, 0.22), transparent 60%),
     linear-gradient(180deg, #061630 0%, #0b2a55 55%, #0e3a6b 100%);
 }
@@ -91,7 +91,7 @@ body::before {
   opacity: 0.55;
   background:
     linear-gradient(180deg, transparent, rgba(6, 22, 48, 0.85)),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 190' preserveAspectRatio='xMidYMax slice'%3E%3Cg fill='%23041024'%3E%3Cpath d='M0 190V128h60v-20h40v20h70V96h18V60l9-10 9 10v36h18v94z'/%3E%3Cpath d='M230 190v-70a60 60 0 0 1 120 0v70z'/%3E%3Cpath d='M360 190V104h22l6-80h20l6 80h22v86z'/%3E%3Cpath d='M450 190v-52h90v-24c0-30 70-30 70 0v24h40v52z'/%3E%3Cpath d='M662 190V92l10-6h44l10 6v98z'/%3E%3Cpath d='M740 190v-64h40v-18c0-24 56-24 56 0v18h50v64z'/%3E%3Cpath d='M900 190V70l8-6 4-50h12l4 50 8 6v120z'/%3E%3Cpath d='M950 190v-58h110v-20a40 40 0 0 1 80 0v20h60v58z'/%3E%3C/g%3E%3Cg fill='%2314b8c4' fill-opacity='.55'%3E%3Ccircle cx='290' cy='96' r='4'/%3E%3Ccircle cx='918' cy='10' r='3'/%3E%3Ccircle cx='398' cy='22' r='3'/%3E%3C/g%3E%3C/svg%3E") bottom center / cover no-repeat;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 190' preserveAspectRatio='xMidYMax slice'%3E%3Cpath fill='%230a1c38' d='M0 190V96l70-40 60 30 90-62 80 50 70-36 110 58 90-44 100 52 80-30 120 48 90-40 110 46 130-30v148z'/%3E%3Cg fill='%23041024'%3E%3Cpath d='M40 190v-40h120v40z'/%3E%3Cpath d='M80 150V60l8-6 4-34h16l4 34 8 6v90z'/%3E%3Cpath d='M74 62h52v6H74z'/%3E%3Cpath d='M200 190v-60h12V96h-6l4-10h10l4 10h-6v34h50V96h-6l4-10h10l4 10h-6v34h12v60h-30v-28a14 14 0 0 0-28 0v28h-8v-28a14 14 0 0 0-28 0z'/%3E%3Cpath d='M360 190v-52h18l-2-6h68l-2 6h18v52z'/%3E%3Cpath d='M380 132V84a30 30 0 0 1 60 0v48z'/%3E%3Cpath d='M382 84h56v-8h-56zM384 76h6v-6h-6zM398 76h6v-6h-6zM412 76h6v-6h-6zM426 76h6v-6h-6z'/%3E%3Cpath d='M520 190V118l3-50h6l3 50v72z'/%3E%3Cpath d='M526 70c-20-4-34 4-40 12 12-8 26-8 40-6-14 2-28 10-32 22 10-12 22-16 32-16 8 2 20 10 26 22-2-14-14-22-22-24 14 0 28 4 36 12-6-10-22-18-40-16 10-4 26-4 36 2-8-8-24-12-36-8z'/%3E%3Cpath d='M640 190v-44h100v44z'/%3E%3Cpath d='M660 146V90l6-4 4-58h14l4 58 6 4v56z'/%3E%3Cpath d='M676 28l-6 -16h20l-6 16z'/%3E%3Cpath d='M800 190V122l3-56h6l3 56v68z'/%3E%3Cpath d='M806 68c-20-4-34 4-40 12 12-8 26-8 40-6-14 2-28 10-32 22 10-12 22-16 32-16 8 2 20 10 26 22-2-14-14-22-22-24 14 0 28 4 36 12-6-10-22-18-40-16 10-4 26-4 36 2-8-8-24-12-36-8z'/%3E%3Cpath d='M880 190v-46h120v46z'/%3E%3Cpath d='M900 144v-30h80v30z'/%3E%3Cpath d='M1040 190V130l3-48h6l3 48v60z'/%3E%3Cpath d='M1046 84c-20-4-34 4-40 12 12-8 26-8 40-6-14 2-28 10-32 22 10-12 22-16 32-16 8 2 20 10 26 22-2-14-14-22-22-24 14 0 28 4 36 12-6-10-22-18-40-16 10-4 26-4 36 2-8-8-24-12-36-8z'/%3E%3Cpath d='M1080 190v-40h120v40z'/%3E%3C/g%3E%3Cpath fill='%230e7fb5' fill-opacity='.55' d='M0 178q25-8 50 0t50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0 50 0V190H0z'/%3E%3Cg fill='%2314b8c4' fill-opacity='.6'%3E%3Ccircle cx='100' cy='18' r='3'/%3E%3Ccircle cx='677' cy='12' r='3'/%3E%3Ccircle cx='410' cy='60' r='3'/%3E%3C/g%3E%3C/svg%3E") bottom center / cover no-repeat;
 }
 
 .xb-cubes {
@@ -722,7 +722,7 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
-   Admin panel (ikkala rejim): "Xiva kechasi" va "Kunduz"
+   Admin panel (ikkala rejim): "Antalya kechasi" va "Kunduz"
    -------------------------------------------------------------------------- */
 .xz .hacker-admin-shell {
   background: transparent !important;
@@ -1037,7 +1037,7 @@ body::before {
   width: 120px;
   height: 220px;
   border-radius: 40% 40% 12px 12px / 12% 12% 12px 12px;
-  background: repeating-linear-gradient(180deg, #1aa6b7 0 18px, #0f6fa8 18px 36px, #f6efe0 36px 44px);
+  background: repeating-linear-gradient(90deg, #b5523b 0 14px, #8a3a28 14px 18px), linear-gradient(#1aa6b7, #1aa6b7);
   clip-path: polygon(22% 0, 78% 0, 100% 100%, 0 100%);
   box-shadow: 0 30px 60px rgba(20, 184, 196, 0.35);
 }
@@ -1087,7 +1087,7 @@ body::before {
 
 /* ==========================================================================
    "Tungi shisha" qatlami: oq fonli kartalar va inputlar o'rniga
-   Xiva kechasiga mos to'q, shaffof oyna uslubi (Kunduz rejimiga tegmaydi).
+   Antalya kechasiga mos to'q, shaffof oyna uslubi (Kunduz rejimiga tegmaydi).
    ========================================================================== */
 .xz {
   --xz-glass: linear-gradient(160deg, rgba(18, 48, 94, 0.82), rgba(7, 22, 48, 0.9));
@@ -1380,7 +1380,7 @@ body::before {
   border-color: rgba(201, 150, 90, 0.35) !important;
 }
 
-/* Kunduzda "Xiva kechasi" tugmasi tungi osmon rangida */
+/* Kunduzda "Antalya kechasi" tugmasi tungi osmon rangida */
 .xz .hacker-admin-shell.light-admin-shell .theme-toggle-btn {
   background: linear-gradient(135deg, var(--xz-night), var(--xz-lapis)) !important;
   border-color: rgba(245, 200, 76, 0.5) !important;

@@ -66,24 +66,24 @@
               <tr>
                 <td>1</td>
                 <td>Ali Valiyev</td>
-                <td>English</td>
-                <td>Beginner</td>
+                <td>IT</td>
+                <td>Python</td>
                 <td>Al-Aziz Academy</td>
                 <td>Navbahor</td>
               </tr>
               <tr>
                 <td>2</td>
                 <td>Madina Karimova</td>
-                <td>Kampyuter</td>
-                <td>Kampyuter 1</td>
+                <td>Kompyuter</td>
+                <td>Excel</td>
                 <td>Al-Aziz Academy</td>
                 <td>Paxtazor</td>
               </tr>
               <tr>
                 <td>3</td>
                 <td>Jasur Sobirov</td>
-                <td>IT</td>
-                <td>Frontend 1</td>
+                <td>Matematika</td>
+                <td>5-sinf</td>
                 <td>Al-Aziz Academy</td>
                 <td>Olmazor</td>
               </tr>

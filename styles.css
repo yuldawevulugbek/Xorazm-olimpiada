@@ -4356,7 +4356,7 @@ body {
 
 /* Savol matnidagi qator bo'linishlari (o'qish matni) va savol rasmlari */
 .question-card .question-text {
-  white-space: pre-line;
+  white-space: pre-wrap;
 }
 
 .question-image {
@@ -4366,4 +4366,20 @@ body {
   margin: 4px 0 14px;
   border-radius: 14px;
   object-fit: contain;
+}
+
+/* Code yaratish: qo'lda code kiritish va Excel orqali code berish */
+.page-head-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.code-input-row { display: flex; gap: 8px; }
+.code-input-row input { flex: 1; min-width: 0; }
+.code-input-row input:not(:placeholder-shown) { letter-spacing: 0.2em; }
+.code-catalog { display: grid; gap: 6px; margin-bottom: 12px; line-height: 1.5; }
+
+/* Telefonda variant bitta bosishda tanlansin: kechikishsiz bosish, yashirin radio karta ichida qoladi */
+.exam-body .option-card {
+  position: relative !important;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }

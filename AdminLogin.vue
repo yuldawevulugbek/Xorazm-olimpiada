@@ -1,9 +1,9 @@
 <template>
   <div class="auth-page admin-auth-page">
-    <XorazmScene compact />
+    <AntalyaScene compact />
     <div v-tilt="5" class="auth-card admin-auth-card">
       <div class="brand-circle brand-icon-only">★</div>
-      <span class="admin-login-kicker">XORAZM OLIMPIADASI · ADMIN</span>
+      <span class="admin-login-kicker">ANTALYA OLIMPIADASI · ADMIN</span>
       <h1>Admin Panel</h1>
       <p>Olimpiada boshqaruv tizimiga kirish</p>
 
@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import XorazmScene from '../components/XorazmScene.vue'
+import AntalyaScene from '../components/AntalyaScene.vue'
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api/axios'

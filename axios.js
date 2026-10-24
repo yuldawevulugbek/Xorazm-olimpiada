@@ -43,4 +43,10 @@ api.interceptors.response.use(
   }
 )
 
+// Render'ning bepul serveri 15 daqiqa so'rovsiz turgach uxlab qoladi va uyg'onishi ~1 daqiqa oladi.
+// Sahifa ochilishi bilan uni uyg'otib qo'yamiz, shunda o'quvchi code kiritguncha backend tayyor bo'ladi.
+export function wakeBackend() {
+  axios.get(`${baseURL}/health/`, { timeout: 90000 }).catch(() => {})
+}
+
 export default api

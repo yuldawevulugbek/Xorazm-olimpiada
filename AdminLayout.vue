@@ -5,7 +5,7 @@
       <div class="sidebar-brand">
         <div class="brand-circle small brand-icon-only xz-emblem">★</div>
         <div>
-          <h2>Xorazm Olimpiadasi</h2>
+          <h2>Antalya Olimpiadasi</h2>
           <span>Admin · {{ adminTitle }}</span>
         </div>
       </div>
@@ -14,6 +14,7 @@
         <RouterLink to="/admin/dashboard">▸ Dashboard</RouterLink>
         <RouterLink v-if="mainAdmin" to="/admin/admins">▸ Adminlar</RouterLink>
         <RouterLink v-if="currentAdmin?.can_create_students" to="/admin/students/create">▸ O‘quvchi yaratish</RouterLink>
+        <RouterLink v-if="currentAdmin?.can_create_students" to="/admin/students/codes">▸ Code yaratish</RouterLink>
         <RouterLink v-if="currentAdmin?.can_create_students" to="/admin/students/import">▸ Excel yuklash</RouterLink>
         <RouterLink to="/admin/students">▸ Yaratilgan o‘quvchilar</RouterLink>
         <RouterLink to="/admin/questions">▸ Testlar</RouterLink>
@@ -31,8 +32,8 @@
       <header v-if="!isHackerRoute" class="topbar hacker-topbar">
         <button class="menu-btn" @click="menuOpen = !menuOpen">☰</button>
         <div class="hacker-title-block">
-          <span class="hacker-eyebrow">Xiva · Ichan Qal‘a</span>
-          <h1>Xorazm Olimpiadasi</h1>
+          <span class="hacker-eyebrow">Antalya · Kaleiçi</span>
+          <h1>Antalya Olimpiadasi</h1>
           <p v-if="mainAdmin">Olimpiada admin paneli va natijalar boshqaruvi</p>
           <p v-else>{{ adminTitle }} o‘quvchilari va natijalari</p>
         </div>
@@ -40,7 +41,7 @@
           <RouterLink v-if="mainAdmin" to="/admin/hacker" class="hacker-top-link">Hacker</RouterLink>
           <button class="theme-toggle-btn" type="button" @click="toggleTheme" :title="isLightMode ? 'Kechki rejimga o‘tish' : 'Kunduzgi rejimga o‘tish'">
             <span class="moon-icon">{{ isLightMode ? '🌙' : '☀️' }}</span>
-            <b>{{ isLightMode ? 'Xiva kechasi' : 'Kunduz' }}</b>
+            <b>{{ isLightMode ? 'Antalya kechasi' : 'Kunduz' }}</b>
           </button>
           <span class="hacker-live-dot"><i></i> LIVE</span>
           <RouterLink to="/student" class="student-link">O‘quvchi kirishi</RouterLink>

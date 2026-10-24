@@ -2,10 +2,10 @@
   <div class="student-entry-page xz-entry">
     <section class="xz-entry-grid">
       <div class="xz-entry-copy">
-        <span class="xz-kicker"><b>★</b> Xorazm viloyati · Online olimpiada</span>
-        <h1 class="xz-title">Xorazm<span>Olimpiadasi</span></h1>
+        <span class="xz-kicker"><b>★</b> Antalya · Online olimpiada</span>
+        <h1 class="xz-title">Antalya<span>Olimpiadasi</span></h1>
         <p class="xz-lead">
-          Xiva naqshlari ostida bilim bellashuvi. Admin bergan status code bilan testga kiring,
+          O‘rta dengiz sohilida bilim bellashuvi. Admin bergan status code bilan testga kiring,
           savollarni ishlang va javoblaringizni yuboring.
         </p>
 
@@ -98,20 +98,17 @@
       </div>
 
       <div class="xz-stage">
-        <XorazmScene />
+        <AntalyaScene />
         <div class="xz-orbit-labels">
-          <span>ICHAN QAL‘A</span>
-          <span>KALTA MINOR</span>
-          <span>ISLOM XO‘JA</span>
+          <span>KALEİÇİ</span>
+          <span>YİVLİ MİNARE</span>
+          <span>HIDIRLIK KULESİ</span>
         </div>
         <div class="xz-subjects xz-stage-subjects">
           <span>🧮 Matematika</span>
+          <span>💻 IT</span>
+          <span>🖥️ Kompyuter</span>
           <span>🇬🇧 English</span>
-          <span>📚 Rus tili</span>
-          <span>💻 IT Frontend</span>
-          <span>🐍 IT Backend</span>
-          <span>🇰🇷 Koreys tili</span>
-          <span>🇸🇦 Arab tili</span>
         </div>
 
       </div>
@@ -185,7 +182,7 @@
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api/axios'
-import XorazmScene from '../components/XorazmScene.vue'
+import AntalyaScene from '../components/AntalyaScene.vue'
 
 const router = useRouter()
 const code = ref('')
