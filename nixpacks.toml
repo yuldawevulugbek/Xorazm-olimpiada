@@ -4,12 +4,12 @@ nixPkgs = ["python311", "python311Packages.pip", "python311Packages.virtualenv",
 [phases.install]
 cmds = [
   "virtualenv .venv",
-  ". .venv/bin/activate && pip install -r backend/requirements.txt"
+  ". .venv/bin/activate && pip install -r requirements.txt"
 ]
 
 [phases.build]
 cmds = [
-  ". .venv/bin/activate && cd backend && python manage.py collectstatic --noinput"
+  ". .venv/bin/activate && python manage.py collectstatic --noinput"
 ]
 
 [start]
