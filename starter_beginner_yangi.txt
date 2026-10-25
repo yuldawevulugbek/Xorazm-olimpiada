@@ -1,0 +1,358 @@
+// English Starter va Beginner: eski savollarni o'chiradi va har biriga 20 tadan yangi (rasmsiz) savol qo'yadi.
+// Admin panelga "ulugbek" bilan kirgan holda brauzer Console'iga (F12) qo'yib, Enter bosing.
+(async () => {
+  const API = 'https://xorazm-olimpiada.onrender.com/api';
+  const headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem('access') };
+  const call = async (path, method = 'GET', body) => {
+    const res = await fetch(API + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    if (!res.ok) throw new Error(method + ' ' + path + ' -> ' + res.status + ' ' + (await res.text()).slice(0, 200));
+    return res.status === 204 ? null : res.json();
+  };
+  const list = (data) => (Array.isArray(data) ? data : data.results || []);
+  const NEW = {
+  "Starter": [
+    {
+      "text": "Hello! My name ____ Ali.",
+      "option_a": "is",
+      "option_b": "am",
+      "option_c": "are",
+      "option_d": "be",
+      "correct_answer": "A"
+    },
+    {
+      "text": "I ____ a boy.",
+      "option_a": "is",
+      "option_b": "am",
+      "option_c": "are",
+      "option_d": "be",
+      "correct_answer": "B"
+    },
+    {
+      "text": "“Olma” ingliz tilida qanday?",
+      "option_a": "banana",
+      "option_b": "orange",
+      "option_c": "apple",
+      "option_d": "grape",
+      "correct_answer": "C"
+    },
+    {
+      "text": "What colour is the sky?",
+      "option_a": "green",
+      "option_b": "red",
+      "option_c": "black",
+      "option_d": "blue",
+      "correct_answer": "D"
+    },
+    {
+      "text": "Two + three = ?",
+      "option_a": "four",
+      "option_b": "five",
+      "option_c": "six",
+      "option_d": "three",
+      "correct_answer": "B"
+    },
+    {
+      "text": "Which one is an animal?",
+      "option_a": "cat",
+      "option_b": "pen",
+      "option_c": "book",
+      "option_d": "chair",
+      "correct_answer": "A"
+    },
+    {
+      "text": "____ is your name?",
+      "option_a": "Who",
+      "option_b": "Where",
+      "option_c": "What",
+      "option_d": "How",
+      "correct_answer": "C"
+    },
+    {
+      "text": "A: Good morning! B: ____",
+      "option_a": "Good night!",
+      "option_b": "Goodbye!",
+      "option_c": "Thank you!",
+      "option_d": "Good morning!",
+      "correct_answer": "D"
+    },
+    {
+      "text": "This is ____ egg.",
+      "option_a": "a",
+      "option_b": "an",
+      "option_c": "two",
+      "option_d": "these",
+      "correct_answer": "B"
+    },
+    {
+      "text": "They ____ my friends.",
+      "option_a": "is",
+      "option_b": "am",
+      "option_c": "are",
+      "option_d": "be",
+      "correct_answer": "C"
+    },
+    {
+      "text": "How many legs does a dog have?",
+      "option_a": "four",
+      "option_b": "two",
+      "option_c": "three",
+      "option_d": "six",
+      "correct_answer": "A"
+    },
+    {
+      "text": "“Kitob” ingliz tilida qanday?",
+      "option_a": "pen",
+      "option_b": "bag",
+      "option_c": "desk",
+      "option_d": "book",
+      "correct_answer": "D"
+    },
+    {
+      "text": "I have two ____.",
+      "option_a": "cat",
+      "option_b": "cats",
+      "option_c": "a cat",
+      "option_d": "cates",
+      "correct_answer": "B"
+    },
+    {
+      "text": "An elephant is very ____.",
+      "option_a": "small",
+      "option_b": "short",
+      "option_c": "big",
+      "option_d": "little",
+      "correct_answer": "C"
+    },
+    {
+      "text": "Monday, Tuesday, ____ ...",
+      "option_a": "Wednesday",
+      "option_b": "Friday",
+      "option_c": "Sunday",
+      "option_d": "Thursday",
+      "correct_answer": "A"
+    },
+    {
+      "text": "She ____ a sister.",
+      "option_a": "has",
+      "option_b": "have",
+      "option_c": "is",
+      "option_d": "are",
+      "correct_answer": "A"
+    },
+    {
+      "text": "“Ona” ingliz tilida qanday?",
+      "option_a": "father",
+      "option_b": "brother",
+      "option_c": "sister",
+      "option_d": "mother",
+      "correct_answer": "D"
+    },
+    {
+      "text": "Which number is “ten”?",
+      "option_a": "2",
+      "option_b": "10",
+      "option_c": "12",
+      "option_d": "20",
+      "correct_answer": "B"
+    },
+    {
+      "text": "Open your ____, please.",
+      "option_a": "sun",
+      "option_b": "cat",
+      "option_c": "book",
+      "option_d": "milk",
+      "correct_answer": "C"
+    },
+    {
+      "text": "Goodbye! See you ____!",
+      "option_a": "yesterday",
+      "option_b": "ago",
+      "option_c": "last",
+      "option_d": "tomorrow",
+      "correct_answer": "D"
+    }
+  ],
+  "Beginner": [
+    {
+      "text": "She ____ to school every day.",
+      "option_a": "go",
+      "option_b": "goes",
+      "option_c": "going",
+      "option_d": "is go",
+      "correct_answer": "B"
+    },
+    {
+      "text": "Look! The children ____ in the garden.",
+      "option_a": "play",
+      "option_b": "plays",
+      "option_c": "played",
+      "option_d": "are playing",
+      "correct_answer": "D"
+    },
+    {
+      "text": "We ____ a film yesterday.",
+      "option_a": "watch",
+      "option_b": "watches",
+      "option_c": "watching",
+      "option_d": "watched",
+      "correct_answer": "D"
+    },
+    {
+      "text": "I ____ visit my grandma tomorrow.",
+      "option_a": "will",
+      "option_b": "did",
+      "option_c": "am",
+      "option_d": "was",
+      "correct_answer": "A"
+    },
+    {
+      "text": "There isn’t ____ milk in the fridge.",
+      "option_a": "many",
+      "option_b": "a",
+      "option_c": "any",
+      "option_d": "an",
+      "correct_answer": "C"
+    },
+    {
+      "text": "The lesson starts ____ nine o’clock.",
+      "option_a": "in",
+      "option_b": "at",
+      "option_c": "on",
+      "option_d": "to",
+      "correct_answer": "B"
+    },
+    {
+      "text": "____ you speak English?",
+      "option_a": "Can",
+      "option_b": "Are",
+      "option_c": "Is",
+      "option_d": "Does",
+      "correct_answer": "A"
+    },
+    {
+      "text": "My father ____ a doctor. He works in a hospital.",
+      "option_a": "am",
+      "option_b": "are",
+      "option_c": "is",
+      "option_d": "be",
+      "correct_answer": "C"
+    },
+    {
+      "text": "I don’t like milk. ____ do you like?",
+      "option_a": "What",
+      "option_b": "Who",
+      "option_c": "Where",
+      "option_d": "When",
+      "correct_answer": "A"
+    },
+    {
+      "text": "He ____ TV now. He is sleeping.",
+      "option_a": "watches",
+      "option_b": "watch",
+      "option_c": "doesn’t watching",
+      "option_d": "isn’t watching",
+      "correct_answer": "D"
+    },
+    {
+      "text": "My birthday is ____ May.",
+      "option_a": "on",
+      "option_b": "at",
+      "option_c": "in",
+      "option_d": "to",
+      "correct_answer": "C"
+    },
+    {
+      "text": "There ____ two apples on the table.",
+      "option_a": "is",
+      "option_b": "are",
+      "option_c": "am",
+      "option_d": "be",
+      "correct_answer": "B"
+    },
+    {
+      "text": "My brother ____ breakfast at 7 every day.",
+      "option_a": "have",
+      "option_b": "has",
+      "option_c": "having",
+      "option_d": "is have",
+      "correct_answer": "B"
+    },
+    {
+      "text": "I saw ____ elephant at the zoo.",
+      "option_a": "a",
+      "option_b": "two",
+      "option_c": "some",
+      "option_d": "an",
+      "correct_answer": "D"
+    },
+    {
+      "text": "Choose the opposite of “hot”.",
+      "option_a": "cold",
+      "option_b": "big",
+      "option_c": "fast",
+      "option_d": "new",
+      "correct_answer": "A"
+    },
+    {
+      "text": "Where ____ you yesterday?",
+      "option_a": "was",
+      "option_b": "were",
+      "option_c": "are",
+      "option_d": "did",
+      "correct_answer": "B"
+    },
+    {
+      "text": "This is my sister. ____ name is Laylo.",
+      "option_a": "His",
+      "option_b": "Their",
+      "option_c": "Her",
+      "option_d": "Its",
+      "correct_answer": "C"
+    },
+    {
+      "text": "How much ____ this bag?",
+      "option_a": "is",
+      "option_b": "are",
+      "option_c": "do",
+      "option_d": "does",
+      "correct_answer": "A"
+    },
+    {
+      "text": "I usually ____ my homework in the evening.",
+      "option_a": "make",
+      "option_b": "does",
+      "option_c": "doing",
+      "option_d": "do",
+      "correct_answer": "D"
+    },
+    {
+      "text": "Read the text.\n\nSara is eleven. She lives near the park. She likes reading and playing basketball. On Saturdays she goes swimming with her brother.\n\nWhat does Sara do on Saturdays?",
+      "option_a": "She plays basketball",
+      "option_b": "She reads books",
+      "option_c": "She goes swimming",
+      "option_d": "She goes to school",
+      "correct_answer": "C"
+    }
+  ]
+};
+  try {
+    const english = list(await call('/subjects/')).find((s) => s.name === 'English');
+    if (!english) throw new Error('English fani topilmadi');
+    const levels = list(await call('/levels/?subject=' + english.id));
+    const report = [];
+    for (const name of ['Starter', 'Beginner']) {
+      const level = levels.find((l) => l.name === name);
+      if (!level) throw new Error(name + ' darajasi topilmadi');
+      const old = list(await call('/questions/?level=' + level.id));
+      const already = old.length === NEW[name].length && old.every((q, i) => q.text === NEW[name][i].text && !q.image_url);
+      if (already) { report.push(name + ': allaqachon yangi'); continue; }
+      for (const q of old) await call('/questions/' + q.id + '/', 'DELETE');
+      for (const q of NEW[name]) await call('/questions/', 'POST', { ...q, subject: english.id, level: level.id, version: 1, image_url: '' });
+      report.push(name + ': ' + old.length + ' ta eski o\'chirildi, ' + NEW[name].length + ' ta yangi qo\'shildi');
+    }
+    alert('Tayyor!\n' + report.join('\n'));
+  } catch (e) {
+    alert('Xato: ' + e.message);
+    console.error(e);
+  }
+})();
