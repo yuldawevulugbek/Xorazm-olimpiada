@@ -1,4 +1,4 @@
-# Antalya Olimpiadasi: Railway + PostgreSQL + Netlify'ga joylash
+# Xorazm Olimpiadasi: Railway + PostgreSQL + Netlify'ga joylash
 
 Bu loyihada backend (`backend/`) Railway'da ishlaydi, baza PostgreSQL, frontend (`frontend/`) esa Netlify'da. Hamma sozlamalar tayyor. Faqat quyidagi qadamlarni bajarasiz.
 
@@ -10,7 +10,7 @@ Zipni oching va papka ichida (unda `.git` bor) quyidagilarni bajaring:
 
 ```powershell
 git add .
-git commit -m "Antalya olimpiadasi: yangi testlar, dizayn, postgres"
+git commit -m "Xorazm olimpiadasi: yangi testlar, dizayn, postgres"
 git push origin main
 ```
 
@@ -22,7 +22,7 @@ git push origin main
 
 1. railway.app → **New Project** → **Deploy from GitHub repo** → reponi tanlang.
 2. Xizmat sozlamalarida **Root Directory** bo'sh qolsin (repo ildizi). `railway.json`, `nixpacks.toml` va `start_railway.sh` hammasini o'zi qiladi: kutubxonalarni o'rnatadi, migratsiya qiladi, testlarni yuklaydi va gunicorn'ni ishga tushiradi.
-3. **Settings → Networking → Generate Domain** tugmasini bosing. Masalan, `antalya-olimpiada.up.railway.app` degan manzil chiqadi.
+3. **Settings → Networking → Generate Domain** tugmasini bosing. Masalan, `xorazm-olimpiada.up.railway.app` degan manzil chiqadi.
 
 ## 2. Railway: PostgreSQL
 

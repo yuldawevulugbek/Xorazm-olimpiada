@@ -111,6 +111,7 @@
           <span>💻 IT Frontend</span>
           <span>🐍 IT Backend</span>
           <span>🇰🇷 Koreys tili</span>
+          <span>🇸🇦 Arab tili</span>
         </div>
 
       </div>

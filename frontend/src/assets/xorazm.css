@@ -1851,3 +1851,101 @@ body::before {
     padding: 18px 14px 80px !important;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Kichik telefonlar (300–420px): hech narsa ekrandan chiqib ketmasin
+   -------------------------------------------------------------------------- */
+@media (max-width: 960px) {
+  .xz-entry-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .xz-entry-grid > *,
+  .xz-entry-copy > *,
+  .xz-register-form > *,
+  .xz-register-row > * {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .xz-entry-grid {
+    padding: 16px 10px 32px;
+  }
+
+  .xz-stage {
+    margin: -16px -10px 0;
+    min-height: 260px;
+  }
+
+  .xz-title {
+    font-size: clamp(28px, 10vw, 40px) !important;
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+
+  .xz-kicker {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    white-space: normal;
+  }
+
+  .xz-login-card {
+    padding: 14px !important;
+    border-radius: 20px;
+  }
+
+  .xz-login-card h1,
+  .xz-login-card h2 {
+    font-size: clamp(22px, 8vw, 28px);
+    overflow-wrap: anywhere;
+  }
+
+  .xz-login-card input,
+  .xz-login-card select,
+  .xz-login-card button {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .xz-register-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .xz-stage-subjects span {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .finish-modal-card {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    padding: 20px 14px !important;
+    box-sizing: border-box;
+  }
+
+  .finish-modal-card h2 {
+    font-size: clamp(20px, 7.5vw, 26px) !important;
+    overflow-wrap: anywhere;
+  }
+
+  .finish-modal-card .confirm-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .finish-modal-card .confirm-actions button,
+  .finish-modal-card > button {
+    min-width: 0;
+    width: 100%;
+    padding-left: 8px;
+    padding-right: 8px;
+    white-space: normal;
+  }
+
+  .xz-login-card .xz-chip,
+  .xz-login-card [class*=badge] {
+    font-size: 10px;
+  }
+}

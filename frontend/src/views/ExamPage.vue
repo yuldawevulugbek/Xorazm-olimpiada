@@ -185,11 +185,9 @@ const isMental = computed(() => payload.value?.mode === 'mental')
 const mentalTasks = computed(() => payload.value?.mental_tasks || [])
 const availableVersions = computed(() => payload.value?.available_versions || [])
 const allQuestions = computed(() => payload.value?.questions || [])
-const visibleQuestions = computed(() => {
-  const start = currentStage.value === 1 ? 0 : 20
-  return allQuestions.value.slice(start, start + 20).map((q, index) => ({ q, number: start + index + 1 }))
-})
-const hasSecondStage = computed(() => allQuestions.value.length > 20)
+// Barcha testlar 1 bosqichli: savollar soni qancha bo'lishidan qat'i nazar hammasi bitta sahifada.
+const visibleQuestions = computed(() => allQuestions.value.map((q, index) => ({ q, number: index + 1 })))
+const hasSecondStage = computed(() => false)
 const isFirstStageComplete = computed(() => allQuestions.value.slice(0, 20).every(q => answers[q.id]))
 const formattedTime = computed(() => {
   const m = Math.floor(remainingSeconds.value / 60)
